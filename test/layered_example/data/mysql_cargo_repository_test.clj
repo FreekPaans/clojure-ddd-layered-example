@@ -1,6 +1,6 @@
 (ns layered-example.data.mysql-cargo-repository-test
   (:require [layered-example.data.mysql-cargo-repository :refer [new-cargo-repository]]
-            [layered-example.domain.cargo.cargo :refer [map->Cargo create-new-cargo]]
+            [layered-example.domain.cargo.cargo :refer [map->Cargo create-new-cargo book-onto-voyage]]
             [layered-example.domain.cargo.cargo-repository :refer [-find -update! -add!]]
             [clojure.test :refer :all]
             [clojure.java.jdbc :as db]))
@@ -12,6 +12,10 @@
 
 (defn clean-tables! []
   (db/execute! db-spec ["delete from cargoes"]))
+
+(defn find-cargo-row [cargo-id]
+  (-> (db/query db-spec ["select * from cargoes where id=?" cargo-id])
+      first))
 
 (defn insert-cargo! [row]
   (let [row (merge {:version 0
@@ -51,4 +55,24 @@
           {:keys [cargo]} (-find repo cargo-id)]
       (is (thrown? AssertionError (-add! repo cargo)) "can't add an existing cargo"))))
       
-    
+(deftest update-cargo
+  (testing "book on voyage"
+    (let [cargo-id (insert-cargo! {})
+          {:keys [version cargo]} (-find repo cargo-id)
+          booked-cargo (book-onto-voyage cargo :voyage-id 12)]
+      (-update! repo version booked-cargo)
+      (is (= 12 (:voyage_id (find-cargo-row cargo-id))) "voyage_id should be updated in database")))
+  (testing "a new cargo"
+    (let [cargo (create-new-cargo :size 44)]
+      (is (thrown? AssertionError (-update! repo 0 cargo)) "a new cargo cannot be updated")))
+  (testing "update logic"
+    (let [cargo-1-id (insert-cargo! {})
+          cargo-2-id (insert-cargo! {})
+          {:keys [version cargo]} (-find repo cargo-1-id)
+          booked-1 (book-onto-voyage cargo :voyage-id 13)]
+      (-update! repo version booked-1)
+      (let [cargo-2-row (find-cargo-row cargo-2-id)]
+        (is (nil? (:voyage_id cargo-2-row)) "only the cargo-1 row should be updated")))))
+
+
+;concurrency exception

@@ -30,8 +30,13 @@
                      :generated_key)]
     (set-cargo-id cargo cargo-id)))
 
+(defn update! [mysql-config version {:keys [cargo-id] :as cargo}]
+  {:pre [cargo-id]}
+  (db/update! mysql-config :cargoes (cargo->row cargo (inc version)) ["id=?" cargo-id])
+  nil)
+
 (defn new-cargo-repository [mysql-config]
   (reify CargoRepository
     (-find [this cargo-id] (find mysql-config cargo-id))
     (-add! [this cargo] (add! mysql-config cargo))
-    (-update! [this concurrency-version cargo-id] nil)))
+    (-update! [this concurrency-version cargo] (update! mysql-config concurrency-version cargo))))
