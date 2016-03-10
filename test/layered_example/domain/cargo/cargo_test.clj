@@ -5,25 +5,23 @@
 
 
 (deftest a-cargo
-  (let [the-cargo (cargo/make-cargo :cargo-id 1 :size 20)]
-    (is (= 1 (:cargo-id the-cargo)))
+  (let [the-cargo (cargo/create-new-cargo :size 20)]
+    (is (nil? (:cargo-id the-cargo)))
     (is (= 20 (:size the-cargo)))))
 
 (defn make-cargo-with-map [m]
-  (apply cargo/make-cargo (flatten (seq m))))
+  (apply cargo/create-new-cargo (flatten (seq m))))
 
 (deftest ctor-tests
-  (let [valid-data {:cargo-id 1 :size 20}]
+  (let [valid-data {:size 20}]
     (is (make-cargo-with-map valid-data) "the valid command is not valid")
-    (is (thrown? AssertionError (make-cargo-with-map (dissoc valid-data :cargo-id))) 
-        "cargo-id is required")
     (is (thrown? AssertionError (make-cargo-with-map (dissoc valid-data :size)))
         "size is required")
     (is (thrown? AssertionError (make-cargo-with-map (assoc valid-data :size "hello")))
         "size should be integer")))
 
 (deftest book-onto-cargo
-  (let [unbooked-cargo (cargo/make-cargo :cargo-id 1 :size 20)
+  (let [unbooked-cargo (cargo/map->Cargo {:cargo-id 1 :size 20})
         booked-cargo (cargo/book-onto-voyage unbooked-cargo :voyage-id 12)]
     (is (nil? (:voyage-id unbooked-cargo)) "voyage-id should be nil on new cargo")
     (is (= 12 (:voyage-id booked-cargo)) "voyage-id not set onto the cargo")
