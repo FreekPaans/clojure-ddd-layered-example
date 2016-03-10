@@ -11,3 +11,6 @@
   {:pre [(integer? voyage-id)
          (nil? (:voyage-id a-cargo))]}
   (assoc a-cargo :voyage-id voyage-id))
+
+(defn set-cargo-id [a-cargo cargo-id]
+  (assoc a-cargo :cargo-id cargo-id))

@@ -1,6 +1,6 @@
 (ns layered-example.data.mysql-cargo-repository-test
   (:require [layered-example.data.mysql-cargo-repository :refer [new-cargo-repository]]
-            [layered-example.domain.cargo.cargo :refer [map->Cargo]]
+            [layered-example.domain.cargo.cargo :refer [map->Cargo create-new-cargo]]
             [layered-example.domain.cargo.cargo-repository :refer [-find -update! -add!]]
             [clojure.test :refer :all]
             [clojure.java.jdbc :as db]))
@@ -31,7 +31,7 @@
 (deftest find-cargo
   (let [cargo-id (insert-cargo! {:size 20
                                  :voyage_id 12
-                                 :version 13}) ]
+                                 :version 13})]
     (is cargo-id "cargo-id niet gezet")
     (let [{:keys [version cargo]} (-find repo cargo-id)
           expected-cargo (map->Cargo {:cargo-id cargo-id
@@ -39,3 +39,16 @@
                                       :voyage-id 12})]
       (is (= expected-cargo cargo) "cargo niet gevonden")
       (is (= 13 version)))))
+
+(deftest add-cargo
+  (testing "a new cargo"
+    (let [cargo (create-new-cargo :size 44)
+          {:keys [cargo-id] :as added-cargo} (-add! repo cargo)]
+      (is cargo-id "cargo-id is not set")
+      (is added-cargo "cargo should be returned")))
+  (testing "an existing cargo"
+    (let [cargo-id (insert-cargo! {})
+          {:keys [cargo]} (-find repo cargo-id)]
+      (is (thrown? AssertionError (-add! repo cargo)) "can't add an existing cargo"))))
+      
+    

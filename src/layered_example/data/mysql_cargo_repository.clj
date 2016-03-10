@@ -1,7 +1,7 @@
 (ns layered-example.data.mysql-cargo-repository
   (:refer-clojure :exclude [find])
   (:require [layered-example.domain.cargo.cargo-repository :refer [CargoRepository -find -add! -update!]]
-            [layered-example.domain.cargo.cargo :refer [map->Cargo]]
+            [layered-example.domain.cargo.cargo :refer [map->Cargo set-cargo-id]]
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as db]))
 
@@ -17,8 +17,21 @@
                 first)]
     {:version (:version row) :cargo (row->cargo row)}))
 
+(defn cargo->row [cargo version]
+  (-> cargo
+      (select-keys [:size :voyage-id])
+      (rename-keys {:voyage-id :voyage_id})
+      (assoc :version version)))
+
+(defn add! [mysql-config cargo]
+  {:pre [(nil? (:cargo-id cargo))]}
+  (let [cargo-id (-> (db/insert! mysql-config :cargoes (cargo->row cargo 1))
+                     first
+                     :generated_key)]
+    (set-cargo-id cargo cargo-id)))
+
 (defn new-cargo-repository [mysql-config]
   (reify CargoRepository
     (-find [this cargo-id] (find mysql-config cargo-id))
-    (-add! [this cargo] nil)
+    (-add! [this cargo] (add! mysql-config cargo))
     (-update! [this concurrency-version cargo-id] nil)))
