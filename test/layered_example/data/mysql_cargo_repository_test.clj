@@ -81,7 +81,7 @@
         (-update! repo version booked-1)
         (let [cargo-2-row (find-cargo-row cargo-2-id)]
           (is (nil? (:voyage_id cargo-2-row)) "only the cargo-1 row should be updated")))))
-  (testing "concurrency exception"
+  (testing "concurrency check"
     (let [cargo-id (insert-cargo! {})
           {:keys [version cargo]} (-find repo cargo-id)
           booked-cargo (book-onto-voyage cargo :voyage-id 13)]
