@@ -29,7 +29,9 @@
     (is (= 12 (:voyage-id booked-cargo)) "voyage-id not set onto the cargo")
     (is (thrown? AssertionError (cargo/book-onto-voyage unbooked-cargo)) "voyage-id is required")
     (is (thrown? AssertionError (cargo/book-onto-voyage unbooked-cargo :voyage-id "bon")) 
-        "voyage-id should be an integer")))
+        "voyage-id should be an integer")
+    (is (thrown? AssertionError (cargo/book-onto-voyage booked-cargo :voyage-id 11))
+        "can't book a cargo on a voyage if it's already booked")))
 
 
 

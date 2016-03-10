@@ -8,6 +8,7 @@
   (map->Cargo cargo-data))
 
 (defn book-onto-voyage [a-cargo & {:keys [voyage-id]}]
-  {:pre [(integer? voyage-id)]}
+  {:pre [(integer? voyage-id)
+         (nil? (:voyage-id a-cargo))]}
   (assoc a-cargo :voyage-id voyage-id))
 
