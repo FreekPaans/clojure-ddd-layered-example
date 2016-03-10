@@ -14,7 +14,7 @@
   (db/execute! db-spec ["delete from cargoes"]))
 
 (defn insert-cargo! [row]
-  (let [row (merge {:version 1
+  (let [row (merge {:version 0
                     :size 0
                     :voyage_id nil} 
                    row)]
@@ -31,10 +31,11 @@
 (deftest find-cargo
   (let [cargo-id (insert-cargo! {:size 20
                                  :voyage_id 12
-                                 :version 1})
-        cargo (-find repo cargo-id)]
+                                 :version 13}) ]
     (is cargo-id "cargo-id niet gezet")
-    (let [expected-cargo (map->Cargo {:cargo-id cargo-id
+    (let [{:keys [version cargo]} (-find repo cargo-id)
+          expected-cargo (map->Cargo {:cargo-id cargo-id
                                       :size 20
                                       :voyage-id 12})]
-      (is (= expected-cargo cargo) "cargo niet gevonden"))))
+      (is (= expected-cargo cargo) "cargo niet gevonden")
+      (is (= 13 version)))))

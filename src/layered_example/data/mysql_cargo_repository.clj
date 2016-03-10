@@ -13,10 +13,9 @@
   
 
 (defn find [mysql-config cargo-id]
-  (let [row (db/query mysql-config ["select * from cargoes where id=?" cargo-id])]
-    (-> row
-        first
-        row->cargo)))
+  (let [row (-> (db/query mysql-config ["select * from cargoes where id=?" cargo-id])
+                first)]
+    {:version (:version row) :cargo (row->cargo row)}))
 
 (defn new-cargo-repository [mysql-config]
   (reify CargoRepository
