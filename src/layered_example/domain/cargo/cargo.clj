@@ -11,4 +11,3 @@
   {:pre [(integer? voyage-id)
          (nil? (:voyage-id a-cargo))]}
   (assoc a-cargo :voyage-id voyage-id))
-
