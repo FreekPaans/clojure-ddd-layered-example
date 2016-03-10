@@ -33,16 +33,20 @@
 (def repo (new-cargo-repository db-spec))
 
 (deftest find-cargo
-  (let [cargo-id (insert-cargo! {:size 20
-                                 :voyage_id 12
-                                 :version 13})]
-    (is cargo-id "cargo-id niet gezet")
-    (let [{:keys [version cargo]} (-find repo cargo-id)
-          expected-cargo (map->Cargo {:cargo-id cargo-id
-                                      :size 20
-                                      :voyage-id 12})]
-      (is (= expected-cargo cargo) "cargo niet gevonden")
-      (is (= 13 version)))))
+  (testing "happy flow"
+    (let [cargo-id (insert-cargo! {:size 20
+                                   :voyage_id 12
+                                   :version 13})]
+      (is cargo-id "cargo-id niet gezet")
+      (let [{:keys [version cargo]} (-find repo cargo-id)
+            expected-cargo (map->Cargo {:cargo-id cargo-id
+                                        :size 20
+                                        :voyage-id 12})]
+        (is (= expected-cargo cargo) "cargo not found")
+        (is (= 13 version)))))
+  (testing "cargo doesn't exist"
+    (clean-tables!)
+    (is (nil? (-find repo 1)) "cargo should not be found")))
 
 (deftest add-cargo
   (testing "a new cargo"

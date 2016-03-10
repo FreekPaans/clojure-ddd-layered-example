@@ -11,17 +11,17 @@
       (rename-keys {:id :cargo-id :voyage_id :voyage-id})
       map->Cargo))
   
-
-(defn find [mysql-config cargo-id]
-  (let [row (-> (db/query mysql-config ["select * from cargoes where id=?" cargo-id])
-                first)]
-    {:version (:version row) :cargo (row->cargo row)}))
-
 (defn cargo->row [cargo version]
   (-> cargo
       (select-keys [:size :voyage-id])
       (rename-keys {:voyage-id :voyage_id})
       (assoc :version version)))
+
+(defn find [mysql-config cargo-id]
+  (let [row (-> (db/query mysql-config ["select * from cargoes where id=?" cargo-id])
+                first)]
+    (when row
+      {:version (:version row) :cargo (row->cargo row)})))
 
 (defn add! [mysql-config cargo]
   {:pre [(nil? (:cargo-id cargo))]}
