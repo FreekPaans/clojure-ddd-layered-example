@@ -32,8 +32,13 @@
 
 (defn update! [mysql-config version {:keys [cargo-id] :as cargo}]
   {:pre [cargo-id]}
-  (db/update! mysql-config :cargoes (cargo->row cargo (inc version)) ["id=?" cargo-id])
-  nil)
+  (let [changed-rows (first (db/update! mysql-config :cargoes 
+                                        (cargo->row cargo (inc version)) 
+                                        ["id=? and version=?" cargo-id version]))]
+    (if (= 0 changed-rows) 
+      (throw (ex-info "row has been modified" 
+                      {:exception-type :optimistic-concurrency}))
+      nil)))
 
 (defn new-cargo-repository [mysql-config]
   (reify CargoRepository

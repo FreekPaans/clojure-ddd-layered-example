@@ -26,6 +26,9 @@
         first
         :generated_key)))
 
+(defn update-cargo-row! [cargo-id data]
+  (db/update! db-spec :cargoes data ["id=?" cargo-id]))
+
 (use-fixtures :each (fn [f]
                       (clean-tables!)
                       (f)))
@@ -74,9 +77,19 @@
           cargo-2-id (insert-cargo! {})
           {:keys [version cargo]} (-find repo cargo-1-id)
           booked-1 (book-onto-voyage cargo :voyage-id 13)]
-      (-update! repo version booked-1)
-      (let [cargo-2-row (find-cargo-row cargo-2-id)]
-        (is (nil? (:voyage_id cargo-2-row)) "only the cargo-1 row should be updated")))))
-
-
-;concurrency exception
+      (do
+        (-update! repo version booked-1)
+        (let [cargo-2-row (find-cargo-row cargo-2-id)]
+          (is (nil? (:voyage_id cargo-2-row)) "only the cargo-1 row should be updated")))))
+  (testing "concurrency exception"
+    (let [cargo-id (insert-cargo! {})
+          {:keys [version cargo]} (-find repo cargo-id)
+          booked-cargo (book-onto-voyage cargo :voyage-id 13)]
+      (do
+        (update-cargo-row! cargo-id {:version (inc version)})
+        (try 
+          (-update! repo version booked-cargo)
+          (is nil "update should fail")
+          (catch RuntimeException ex
+            (is (= :optimistic-concurrency (:exception-type (ex-data ex))))))))))
+          
