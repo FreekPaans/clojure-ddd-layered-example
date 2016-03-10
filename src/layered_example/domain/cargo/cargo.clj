@@ -2,8 +2,9 @@
 
 (defrecord Cargo [cargo-id size voyage-id])
 
-(defn create-new-cargo [& {:keys [size] :as cargo-data}]
-  {:pre [(integer? size)]}
+(defn create-new-cargo [& {:keys [size voyage-id] :as cargo-data}]
+  {:pre [(integer? size)
+         (nil? voyage-id)]}
   (map->Cargo cargo-data))
 
 (defn book-onto-voyage [a-cargo & {:keys [voyage-id]}]

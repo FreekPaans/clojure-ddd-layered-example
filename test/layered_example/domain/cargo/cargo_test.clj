@@ -18,7 +18,9 @@
     (is (thrown? AssertionError (make-cargo-with-map (dissoc valid-data :size)))
         "size is required")
     (is (thrown? AssertionError (make-cargo-with-map (assoc valid-data :size "hello")))
-        "size should be integer")))
+        "size should be integer")
+    (is (thrown? AssertionError (make-cargo-with-map (assoc valid-data :voyage-id 12)))
+        "a new cargo can't be assigned to a voyage yet")))
 
 (deftest book-onto-cargo
   (let [unbooked-cargo (cargo/map->Cargo {:cargo-id 1 :size 20})
