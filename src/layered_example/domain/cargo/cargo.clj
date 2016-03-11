@@ -13,4 +13,5 @@
   (assoc a-cargo :voyage-id voyage-id))
 
 (defn set-cargo-id [a-cargo cargo-id]
+  {:pre [(not (:cargo-id a-cargo))]}
   (assoc a-cargo :cargo-id cargo-id))

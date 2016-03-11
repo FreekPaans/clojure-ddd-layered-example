@@ -33,6 +33,13 @@
     (is (thrown? AssertionError (cargo/book-onto-voyage booked-cargo :voyage-id 11))
         "can't book a cargo on a voyage if it's already booked")))
 
+(deftest set-cargo-id
+  (let [cargo-with-id (-> (cargo/create-new-cargo :size 44)
+                          (cargo/set-cargo-id 1))]
+    (is (= 1 (:cargo-id cargo-with-id)) "cargo-id should be set")
+    (is (thrown? AssertionError (cargo/set-cargo-id cargo-with-id 2)) "can't set id for cargo that already has id")))
+        
+
 
 
 
