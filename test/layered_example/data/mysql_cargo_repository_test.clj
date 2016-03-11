@@ -3,15 +3,11 @@
             [layered-example.domain.cargo.cargo :refer [map->Cargo create-new-cargo book-onto-voyage]]
             [layered-example.domain.cargo.cargo-repository :refer [-find -update! -add!]]
             [clojure.test :refer :all]
-            [clojure.java.jdbc :as db]))
+            [clojure.java.jdbc :as db]
+            [layered-example.data.test-helpers :as test-helpers]))
 
-(def db-spec {:subprotocol "mysql"
-              :subname "//127.0.0.1:3306/layered_example"
-              :user "layered-example"
-              :password "layered-example"})
+(def db-spec (test-helpers/default-db-spec))
 
-(defn clean-tables! []
-  (db/execute! db-spec ["delete from cargoes"]))
 
 (defn find-cargo-row [cargo-id]
   (-> (db/query db-spec ["select * from cargoes where id=?" cargo-id])
@@ -30,7 +26,8 @@
   (db/update! db-spec :cargoes data ["id=?" cargo-id]))
 
 (use-fixtures :each (fn [f]
-                      (clean-tables!)
+                      (test-helpers/set-db-spec! db-spec)
+                      (test-helpers/clean-tables!)
                       (f)))
 
 (def repo (new-cargo-repository db-spec))
@@ -48,7 +45,7 @@
         (is (= expected-cargo cargo) "cargo not found")
         (is (= 13 version)))))
   (testing "cargo doesn't exist"
-    (clean-tables!)
+    (test-helpers/clean-tables!)
     (is (nil? (-find repo 1)) "cargo should not be found")))
 
 (deftest add-cargo
