@@ -15,7 +15,6 @@
                       (cargo-repository/set-implementation! the-cargo-repo)
                       (f)))
 
-
 (deftest create-a-cargo
   (let [{:keys [cargo-id]} (app-svc/create-new-cargo! :size 44)]
     (is cargo-id "cargo should be returned")
